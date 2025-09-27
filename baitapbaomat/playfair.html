@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Playfair Cipher</title></head>
+<body>
+<h3>Playfair Cipher</h3>
+<label>Text:</label><br><textarea id="txt" rows="4" cols="50"></textarea><br>
+<label>Key:</label><input id="key" type="text" value="PLAYFAIR"><br><br>
+<button onclick="enc()">Encrypt</button>
+<button onclick="dec()">Decrypt</button>
+<pre id="out"></pre>
+
+<script>
+function preparePlayKey(k){
+  k = k.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+  let used = {}; let out='';
+  for(let ch of k) if(!used[ch]){ used[ch]=true; out += ch; }
+  for(let c=65;c<=90;c++){ let ch=String.fromCharCode(c); if(ch=='J') continue; if(!used[ch]){ used[ch]=true; out+=ch; } }
+  return out.substr(0,25);
+}
+function buildPlayTable(key){
+  let table = [], pos = {};
+  let k = preparePlayKey(key);
+  let idx = 0;
+  for(let r=0;r<5;r++){ table[r]=[]; for(let c=0;c<5;c++){ table[r][c] = k[idx++]; pos[table[r][c]] = {r:r,c:c}; } }
+  return {table:table, pos:pos};
+}
+function normalizePlain(pt){
+  let t = pt.toUpperCase().replace(/[^A-Z]/g,'').replace(/J/g,'I');
+  let out='';
+  for(let i=0;i<t.length;i++){
+    let a = t[i];
+    let b = (i+1<t.length)? t[i+1] : null;
+    if(b === null){ out += a + 'X'; }
+    else if(a == b){ out += a + 'X'; }
+    else { out += a + b; i++; }
+  }
+  return out;
+}
+function playfairEncrypt(pt,key){
+  let data = buildPlayTable(key);
+  let s = normalizePlain(pt);
+  let out='';
+  for(let i=0;i<s.length;i+=2){
+    let a = s[i], b = s[i+1];
+    let pa = data.pos[a], pb = data.pos[b];
+    if(pa.r == pb.r){
+      out += data.table[pa.r][(pa.c+1)%5];
+      out += data.table[pb.r][(pb.c+1)%5];
+    } else if(pa.c == pb.c){
+      out += data.table[(pa.r+1)%5][pa.c];
+      out += data.table[(pb.r+1)%5][pb.c];
+    } else {
+      out += data.table[pa.r][pb.c];
+      out += data.table[pb.r][pa.c];
+    }
+  }
+  return out;
+}
+function playfairDecrypt(ct,key){
+  let data = buildPlayTable(key);
+  let s = ct.toUpperCase().replace(/[^A-Z]/g,'');
+  let out='';
+  for(let i=0;i<s.length;i+=2){
+    let a = s[i], b = s[i+1];
+    let pa = data.pos[a], pb = data.pos[b];
+    if(pa.r == pb.r){
+      out += data.table[pa.r][(pa.c-1+5)%5];
+      out += data.table[pb.r][(pb.c-1+5)%5];
+    } else if(pa.c == pb.c){
+      out += data.table[(pa.r-1+5)%5][pa.c];
+      out += data.table[(pb.r-1+5)%5][pb.c];
+    } else {
+      out += data.table[pa.r][pb.c];
+      out += data.table[pb.r][pa.c];
+    }
+  }
+  return out;
+}
+function enc(){ document.getElementById('out').innerText = playfairEncrypt(document.getElementById('txt').value, document.getElementById('key').value); }
+function dec(){ document.getElementById('out').innerText = playfairDecrypt(document.getElementById('txt').value, document.getElementById('key').value); }
+</script>
+</body>
+</html>

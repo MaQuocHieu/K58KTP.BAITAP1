@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Vigenere Cipher</title></head>
+<body>
+<h3>Vigenere Cipher</h3>
+<label>Text:</label><br><textarea id="txt" rows="4" cols="50"></textarea><br>
+<label>Key:</label><input id="key" type="text" value="LEMON"><br><br>
+<button onclick="enc()">Encrypt</button>
+<button onclick="dec()">Decrypt</button>
+<pre id="out"></pre>
+
+<script>
+function onlyLettersUpper(s){ return s.toUpperCase().replace(/[^A-Z]/g,''); }
+function vigenereEncrypt(pt,key){
+  let s = onlyLettersUpper(pt), k = onlyLettersUpper(key);
+  if(k.length===0) return '';
+  let out='';
+  for(let i=0;i<s.length;i++){ let p=s.charCodeAt(i)-65; let kk=k.charCodeAt(i%k.length)-65; out += String.fromCharCode(65 + (p+kk)%26); }
+  return out;
+}
+function vigenereDecrypt(ct,key){
+  let s = onlyLettersUpper(ct), k = onlyLettersUpper(key);
+  if(k.length===0) return '';
+  let out='';
+  for(let i=0;i<s.length;i++){ let c=s.charCodeAt(i)-65; let kk=k.charCodeAt(i%k.length)-65; let p=(c-kk)%26; if(p<0) p+=26; out += String.fromCharCode(65+p); }
+  return out;
+}
+function enc(){ document.getElementById('out').innerText = vigenereEncrypt(document.getElementById('txt').value, document.getElementById('key').value); }
+function dec(){ document.getElementById('out').innerText = vigenereDecrypt(document.getElementById('txt').value, document.getElementById('key').value); }
+</script>
+</body>
+</html>

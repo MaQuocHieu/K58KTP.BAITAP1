@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Affine Cipher Demo</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;max-width:800px;margin:20px auto;padding:12px}
+textarea{width:100%;height:120px;font-size:14px;margin-bottom:8px}
+input, button{padding:8px;margin:6px 0}
+.box{border:1px solid #ddd;padding:12px;border-radius:6px}
+</style>
+</head>
+<body>
+<h1>Affine Cipher</h1>
+<div class="box">
+<label for="a">a (coprime with 26):</label>
+<input id="a" type="number" value="5" />
+<label for="b">b:</label>
+<input id="b" type="number" value="8" />
+<label for="input">Input (plaintext / ciphertext):</label>
+<textarea id="input" placeholder="Nhập văn bản..."></textarea>
+<div>
+<button id="enc">Encrypt</button>
+<button id="dec">Decrypt</button>
+<button id="clr">Clear</button>
+</div>
+<label for="output">Output:</label>
+<textarea id="output" readonly></textarea>
+</div>
+
+
+<script>
+function egcd(a,b){ if(b===0) return [a,1,0]; let r=egcd(b,a%b); return [r[0], r[2], r[1] - Math.floor(a/b)*r[2]]; }
+function modinv(a,m){ let r=egcd(a,m); if(r[0] !== 1) return null; let x = r[1] % m; if(x<0) x+=m; return x; }
+function mod(n,m){ return ((n % m) + m) % m; }
+function affine_encrypt(s,a,b){ return s.split('').map(ch=>{
+if(ch>='A'&&ch<='Z') return String.fromCharCode(( (a*(ch.charCodeAt(0)-65) + b) % 26 ) + 65);
+if(ch>='a'&&ch<='z') return String.fromCharCode(( (a*(ch.charCodeAt(0)-97) + b) % 26 ) + 97);
+return ch;
+}).join(''); }
+function affine_decrypt(s,a,b){ let ai = modinv(a,26); if(ai === null) return '[ERROR: a has no inverse mod26]'; return s.split('').map(ch=>{
+if(ch>='A'&&ch<='Z') return String.fromCharCode(mod(ai*(ch.charCodeAt(0)-65 - b),26) + 65);
+if(ch>='a'&&ch<='z') return String.fromCharCode(mod(ai*(ch.charCodeAt(0)-97 - b),26) + 97);
+return ch; }).join(''); }
+
+
+document.getElementById('enc').addEventListener('click', ()=>{
+const a = parseInt(document.getElementById('a').value||1);
+const b = parseInt(document.getElementById('b').value||0);
+const txt = document.getElementById('input').value;
+document.getElementById('output').value = affine_encrypt(txt,a,b);
+});
+
+
+document.getElementById('dec').addEventListener('click', ()=>{
+const a = parseInt(document.getElementById('a').value||1);
+const b = parseInt(document.getElementById('b').value||0);
+const txt = document.getElementById('input').value;
+document.getElementById('output').value = affine_decrypt(txt,a,b);
+});
+
+
+document.getElementById('clr').addEventListener('click', ()=>{ document.getElementById('input').value=''; document.getElementById('output').value=''; });
+</script>
+</body>
+</html>

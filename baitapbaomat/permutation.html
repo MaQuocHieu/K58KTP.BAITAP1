@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Columnar Transposition (Permutation) Demo</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;max-width:900px;margin:20px auto;padding:12px}
+textarea{width:100%;height:120px;font-size:14px;margin-bottom:8px}
+input, button{padding:8px;margin:6px 0}
+.box{border:1px solid #ddd;padding:12px;border-radius:6px}
+</style>
+</head>
+<body>
+<h1>Permutation (Columnar Transposition)</h1>
+<div class="box">
+<label for="key">Key (string, e.g. SECRET or 4312):</label>
+<input id="key" type="text" value="SECRET" />
+<label for="input">Input (plaintext / ciphertext):</label>
+<textarea id="input" placeholder="Nhập văn bản... (khoảng trắng sẽ được loại bỏ khi mã hóa)"></textarea>
+<div>
+<button id="enc">Encrypt</button>
+<button id="dec">Decrypt</button>
+<button id="clr">Clear</button>
+</div>
+<label for="output">Output:</label>
+<textarea id="output" readonly></textarea>
+</div>
+
+
+<script>
+function columnar_encrypt(pt,key){
+key = key || '';
+let n = key.length; if(n===0) return '';
+let clean = pt.replace(/\s+/g,'');
+let rows = Math.ceil(clean.length / n);
+let mat = Array.from({length:rows}, ()=>Array(n).fill('X'));
+let idx = 0;
+for(let r=0;r<rows;r++) for(let c=0;c<n;c++) if(idx < clean.length) mat[r][c] = clean[idx++];
+let pairs = key.split('').map((ch,i)=>({ch,i}));
+pairs.sort((a,b)=> a.ch.localeCompare(b.ch));
+let ct = '';
+for(let p of pairs){ let c = p.i; for(let r=0;r<rows;r++) ct += mat[r][c]; }
+return ct;
+}
+
+
+function columnar_decrypt(ct,key){ key = key || ''; let n = key.length; if(n===0) return ''; let rows = Math.ceil(ct.length / n);
+let pairs = key.split('').map((ch,i)=>({ch,i})); pairs.sort((a,b)=> a.ch.localeCompare(b.ch));
+let cols = Array(n).fill(''); let idx=0;
+for(let p of pairs){ cols[p.i] = ct.substr(idx, rows); idx += rows; }
+let pt=''; for(let r=0;r<rows;r++) for(let c=0;c<n;c++) pt += (cols[c][r] || ''); return pt;
+}
+
+
+document.getElementById('enc').addEventListener('click', ()=>{
+const key = document.getElementById('key').value || '';
+const txt = document.getElementById('input').value;
+document.getElementById('output').value = columnar_encrypt(txt, key);
+});
+
+
+document.getElementById('dec').addEventListener('click', ()=>{
+const key = document.getElementById('key').value || '';
+const txt = document.getElementById('input').value;
+document.getElementById('output').value = columnar_decrypt(txt, key);
+});
+
+
+document.getElementById('clr').addEventListener('click', ()=>{ document.getElementById('input').value=''; document.getElementById('output').value=''; });
+</script>
+</body>
+</html>

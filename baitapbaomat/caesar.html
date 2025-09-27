@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Caesar Cipher Demo</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;max-width:800px;margin:20px auto;padding:12px}
+textarea{width:100%;height:120px;font-size:14px;margin-bottom:8px}
+input, button, select{padding:8px;margin:6px 0}
+.box{border:1px solid #ddd;padding:12px;border-radius:6px}
+pre{background:#f7f7f7;padding:8px}
+</style>
+</head>
+<body>
+<h1>Caesar Cipher</h1>
+<div class="box">
+<label for="k">Shift k (0-25):</label>
+<input id="k" type="number" value="3" min="0" max="25" />
+<label for="input">Input (plaintext / ciphertext):</label>
+<textarea id="input" placeholder="Nhập văn bản..."></textarea>
+<div>
+<button id="enc">Encrypt</button>
+<button id="dec">Decrypt</button>
+<button id="clr">Clear</button>
+</div>
+<label for="output">Output:</label>
+<textarea id="output" readonly></textarea>
+</div>
+
+
+<script>
+function mod(n,m){return ((n % m) + m) % m}
+function caesar_encrypt(s,k){k = mod(k,26); return s.split('').map(ch=>{
+if(ch>='A'&&ch<='Z') return String.fromCharCode((ch.charCodeAt(0)-65 + k)%26 + 65);
+if(ch>='a'&&ch<='z') return String.fromCharCode((ch.charCodeAt(0)-97 + k)%26 + 97);
+return ch;
+}).join('');}
+function caesar_decrypt(s,k){return caesar_encrypt(s, 26 - mod(k,26));}
+
+
+document.getElementById('enc').addEventListener('click', ()=>{
+const k = parseInt(document.getElementById('k').value||0);
+const txt = document.getElementById('input').value;
+document.getElementById('output').value = caesar_encrypt(txt, k);
+});
+document.getElementById('dec').addEventListener('click', ()=>{
+const k = parseInt(document.getElementById('k').value||0);
+const txt = document.getElementById('input').value;
+document.getElementById('output').value = caesar_decrypt(txt, k);
+});
+document.getElementById('clr').addEventListener('click', ()=>{
+document.getElementById('input').value=''; document.getElementById('output').value='';
+});
+</script>
+</body>
+</html>
